@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Build Path: /app/.heroku/php/
+# Build Deps: libraries/libmcrypt-2.5.8, libraries/libc-client-2007f
+
+VERSION=7.0.17
+
+source $(dirname $0)/php
