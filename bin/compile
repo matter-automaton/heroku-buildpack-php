@@ -42,8 +42,6 @@ CACHE_DIR=$2/php
 mkdir -p "$CACHE_DIR"
 ENV_DIR=${3:-} # Anvil has none
 BP_DIR=$(cd $(dirname $0); cd ..; pwd) 
-COMPOSER_MEMORY_LIMIT=-1 
-export COMPOSER_MEMORY_LIMIT=-1 
 
 # Allow overriding the base S3 URL for self-hosted libraries, extensions or other assets
 BASE_S3_URL=${BASE_S3_URL:-https://lang-php.s3.amazonaws.com/}
@@ -184,9 +182,9 @@ if [[ "${PHP_VERSION}" ]]; then
     status "Installing PHP extensions..."
     
     php() {
-        `which php` "$@"
+        # `which php` "$@"
         # the newrelic extension logs to stderr which pollutes our build output on each invocation of PHP, the daemon it launches will prevent the build from finishing, and each call to PHP would be logged to NR as non-web traffic, so we disable it for the duration of this build
-        # `which php` -dnewrelic.enabled=0 -dnewrelic.loglevel=error -dnewrelic.daemon.dont_launch=3 -dnewrelic.daemon.loglevel=error "$@"
+        `which php` -dnewrelic.enabled=0 -dnewrelic.loglevel=error -dnewrelic.daemon.dont_launch=3 -dnewrelic.daemon.loglevel=error "$@"
     }
     
     exts=()
@@ -220,7 +218,7 @@ if [[ -f "composer.phar" ]]; then
     [[ -x "composer.phar" ]] || error "File '/composer.phar' isn't executable; please 'chmod +x'!"
     $engine_r 'new Phar("composer.phar");' &> /dev/null || error "File '/composer.phar' is not a valid PHAR archive!"
     composer() {
-        $engine composer.phar "$@"
+        $engine -d memory_limit=-1 composer.phar "$@"
     }
     export -f composer
     composer --version 2>&1 | grep "^Composer version" > /dev/null || error "File '/composer.phar' is not a Composer executable!"
@@ -228,7 +226,7 @@ if [[ -f "composer.phar" ]]; then
 else
     curl --silent --location "$S3_URL/composer.tar.gz" | tar xz -C $BUILD_DIR/.heroku/php
     composer() {
-        $engine `which composer` "$@"
+        $engine -d memory_limit=-1 `which composer` "$@"
     }
     export -f composer
 fi
@@ -273,7 +271,7 @@ fi
 unset COMPOSER_GITHUB_OAUTH_TOKEN
 
 # install dependencies unless composer.json is completely empty (in which case it'd talk to packagist.org which may be slow and is unnecessary)
-cat composer.json | python -c 'import sys,json; sys.exit(not json.load(sys.stdin));' && COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction -vvv 2>&1 | indent
+cat composer.json | python -c 'import sys,json; sys.exit(not json.load(sys.stdin));' && composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction -vvv 2>&1 | indent
 
 composer show --installed heroku/heroku-buildpack-php &> /dev/null && error "Your composer.json requires 'heroku/heroku-buildpack-php'.
 This package may only be used as a dependency in 'require-dev'!"
