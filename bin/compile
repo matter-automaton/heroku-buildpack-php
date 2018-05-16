@@ -41,9 +41,7 @@ BUILD_DIR=$1
 CACHE_DIR=$2/php
 mkdir -p "$CACHE_DIR"
 ENV_DIR=${3:-} # Anvil has none
-BP_DIR=$(cd $(dirname $0); cd ..; pwd)
-export COMPOSER_MEMORY_LIMIT=-1
-COMPOSER_MEMORY_LIMIT=-1 
+BP_DIR=$(cd $(dirname $0); cd ..; pwd) 
 
 # Allow overriding the base S3 URL for self-hosted libraries, extensions or other assets
 BASE_S3_URL=${BASE_S3_URL:-https://lang-php.s3.amazonaws.com/}
@@ -272,7 +270,7 @@ fi
 unset COMPOSER_GITHUB_OAUTH_TOKEN
 
 # install dependencies unless composer.json is completely empty (in which case it'd talk to packagist.org which may be slow and is unnecessary)
-cat composer.json | python -c 'import sys,json; sys.exit(not json.load(sys.stdin));' && COMPOSER_MEMORY_LIMIT=-1 composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction 2>&1 | indent
+cat composer.json | python -c 'import sys,json; sys.exit(not json.load(sys.stdin));' && composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction -vvv 2>&1 | indent
 
 composer show --installed heroku/heroku-buildpack-php &> /dev/null && error "Your composer.json requires 'heroku/heroku-buildpack-php'.
 This package may only be used as a dependency in 'require-dev'!"
