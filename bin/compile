@@ -218,7 +218,7 @@ if [[ -f "composer.phar" ]]; then
     [[ -x "composer.phar" ]] || error "File '/composer.phar' isn't executable; please 'chmod +x'!"
     $engine_r 'new Phar("composer.phar");' &> /dev/null || error "File '/composer.phar' is not a valid PHAR archive!"
     composer() {
-        $engine -d memory_limit=3G composer.phar "$@"
+        $engine -d memory_limit=-1 composer.phar "$@"
     }
     export -f composer
     composer --version 2>&1 | grep "^Composer version" > /dev/null || error "File '/composer.phar' is not a Composer executable!"
@@ -226,7 +226,7 @@ if [[ -f "composer.phar" ]]; then
 else
     curl --silent --location "$S3_URL/composer.tar.gz" | tar xz -C $BUILD_DIR/.heroku/php
     composer() {
-        $engine -d memory_limit=3G `which composer` "$@"
+        $engine -d memory_limit=-1 `which composer` "$@"
     }
     export -f composer
 fi
