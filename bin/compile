@@ -226,7 +226,7 @@ if [[ -f "composer.phar" ]]; then
 else
     curl --silent --location "$S3_URL/composer.tar.gz" | tar xz -C $BUILD_DIR/.heroku/php
     composer() {
-        $engine -d memory_limit=2G `which composer` "$@"
+        $engine -d memory_limit=-1 `which composer` "$@"
     }
     export -f composer
 fi
@@ -273,8 +273,8 @@ unset COMPOSER_GITHUB_OAUTH_TOKEN
 # install dependencies unless composer.json is completely empty (in which case it'd talk to packagist.org which may be slow and is unnecessary)
 cat composer.json | python -c 'import sys,json; sys.exit(not json.load(sys.stdin));' && composer install --no-dev --prefer-dist --no-interaction --no-autoloader -vvv 2>&1 | indent
 
-status "Optimizing autoloader"
-composer dump-autoload --no-dev -vvv 2>&1 | indent
+status "Optimizing autoloader..."
+composer dump-autoload --optimize --no-dev
 
 composer show --installed heroku/heroku-buildpack-php &> /dev/null && error "Your composer.json requires 'heroku/heroku-buildpack-php'.
 This package may only be used as a dependency in 'require-dev'!"
