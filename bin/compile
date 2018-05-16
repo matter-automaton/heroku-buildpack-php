@@ -226,7 +226,7 @@ if [[ -f "composer.phar" ]]; then
 else
     curl --silent --location "$S3_URL/composer.tar.gz" | tar xz -C $BUILD_DIR/.heroku/php
     composer() {
-        $engine -d memory_limit=-1 `which composer` "$@"
+        $engine -d memory_limit=2G `which composer` "$@"
     }
     export -f composer
 fi
