@@ -232,7 +232,7 @@ fi
 # echo composer version for info purposes
 # tail to get rid of outdated version warnings (Composer sends those to STDOUT instead of STDERR)
 composer self-update
-php -d memory_limit=-1 composer --version 2> /dev/null | tail -n 1 | indent
+COMPOSER_MEMORY_LIMIT=-1 composer --version 2> /dev/null | tail -n 1 | indent
 
 # throw a notice if people have added their vendor dir to Git; that's bad practice and makes everything slow and cluttered
 if [[ -e "$(composer config vendor-dir 2> /dev/null | tail -n 1)" ]]; then # tail, as composer echos outdated version warnings to STDOUT
